@@ -22,7 +22,7 @@
  */
 `default_nettype none
 
-module Fixed_PID_Controller (
+module tt_um_hyx1111bit_fixed_pid (
     input  wire [7:0] ui_in,    // Dedicated inputs  - Brain Signal
     input  wire [7:0] uio_in,   // IOs: Input path   - Desired Signal
 
