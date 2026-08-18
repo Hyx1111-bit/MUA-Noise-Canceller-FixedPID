@@ -1,5 +1,5 @@
 /*
- * Module: tt_um_mua_pid_top
+ * Module: Fixed_PID_Controller
  *==============================================================================
  * Top-level template for Tiny Tapeout project.
  * Integrates: Data_Receiver (x2), Unsigned2Signed_Converter (x2),
@@ -14,21 +14,21 @@
  *     every downstream valid_out/data_valid_out is chained into the
  *     next stage's valid_in/data_valid_in. Final S2U data_valid_out
  *     is unused (not routed to any pin).
- *   - uo_out done; uio_out/uio_oe pending (cs_n1/cs_n2 not yet wired)
+ *   - uio_out / uio_oe: not used, tied to 0
  *
  * Author: Yuxuan Huo
- * Data:   8/19/2026
+ * Date:   07/19/2026
  *==============================================================================
  */
 `default_nettype none
 
 module Fixed_PID_Controller (
-    input  wire [7:0] ui_in,    // Dedicated inputs  Brain Signal
-    input  wire [7:0] uio_in,   // IOs: Input path   Desired Signal
+    input  wire [7:0] ui_in,    // Dedicated inputs  - Brain Signal
+    input  wire [7:0] uio_in,   // IOs: Input path   - Desired Signal
 
     output wire [7:0] uo_out,   // Stimulus Signal (PID Output Signal)
-    output wire [7:0] uio_out,  // IOs: Output path 
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
+    output wire [7:0] uio_out,  // IOs: Output path (unused, tied to 0)
+    output wire [7:0] uio_oe,   // IOs: Enable path (unused, tied to 0)
 
     input  wire        ena,     // always 1 when the design is powered
     input  wire        clk,     // clock
@@ -159,7 +159,7 @@ module Fixed_PID_Controller (
         .ena             (ena),
         .ds_in           (ds_signed),
         .bs_in           (bs_signed),
-        .data_valid      (bs_signed_valid),
+        .data_valid      (bs_signed_valid & ds_signed_valid),
         .stim_signal_out (pid_stim_out),
         .stim_valid      (pid_stim_valid)
     );
@@ -182,7 +182,12 @@ module Fixed_PID_Controller (
     // Top-level output assignments
     //--------------------------------------------------------------------
     assign uo_out  = stim_unsigned;   // Stimulus signal to DAC
-    assign uio_out = 8'b0;            // cs_n1, cs_n2: not yet wired
-    assign uio_oe  = 8'b0;            // direction control: not yet wired
+    assign uio_out = 8'b0;            // unused, tied low
+    assign uio_oe  = 8'b0;            // unused, all uio pins configured as input
+
+    //--------------------------------------------------------------------
+    // List all unused signals to prevent warnings
+    //--------------------------------------------------------------------
+    wire _unused = &{stim_unsigned_valid, 1'b0};
 
 endmodule
